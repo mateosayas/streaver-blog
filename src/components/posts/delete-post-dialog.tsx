@@ -30,13 +30,16 @@ export function DeletePostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[440px] gap-6 rounded-[14px] p-8 shadow-[0_20px_60px_rgba(28,28,46,0.18)]">
+      <DialogContent
+        mobileFullScreen
+        className="gap-6 p-8 max-sm:flex max-sm:flex-col sm:w-110 sm:rounded-[14px] sm:shadow-[0_20px_60px_rgba(28,28,46,0.18)]"
+      >
         <div className="flex flex-col gap-3">
           <DialogTitle className="text-foreground text-[18px] leading-snug font-bold tracking-[-0.02em]">
             Delete this post?
           </DialogTitle>
           <DialogDescription asChild>
-            <div className="text-muted-foreground flex flex-col gap-1 text-[14px] leading-[22px]">
+            <div className="text-muted-foreground flex flex-col gap-1 text-[14px] leading-5.5">
               <p>
                 This will remove{" "}
                 <strong className="text-foreground font-semibold">{post.title}</strong> from the
@@ -47,17 +50,17 @@ export function DeletePostDialog({
           </DialogDescription>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 max-sm:mt-auto">
           <Button
             variant="outline"
-            className="h-[38px] rounded-lg border-[#E5E3DC] px-[18px]"
+            className="h-9.5 rounded-lg border-[#E5E3DC] px-4.5"
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
           >
             Cancel
           </Button>
           <Button
-            className="bg-destructive hover:bg-destructive/90 h-[38px] rounded-lg px-[18px] text-white"
+            className="bg-destructive hover:bg-destructive/90 h-9.5 rounded-lg px-4.5 text-white"
             onClick={onConfirm}
             disabled={isDeleting}
           >
