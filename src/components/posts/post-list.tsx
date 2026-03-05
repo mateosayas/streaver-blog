@@ -19,30 +19,28 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [postToDelete, setPostToDelete] = useState<PostWithUser | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const handleDeleteRequest = (id: number) => {
     const post = posts.find((p) => p.id === id);
-    if (!post || deletingIds.has(id)) return;
+
+    if (!post || isDeleting) return;
+
     setPostToDelete(post);
-    setIsDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
 
     setIsDeleting(true);
-    setDeletingIds((prev) => new Set(prev).add(postToDelete.id));
 
     const result = await deletePost(postToDelete.id);
 
     if (result.success) {
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
       router.refresh();
-      setIsDialogOpen(false);
       setPostToDelete(null);
+
       toast.success("Post deleted successfully");
     } else {
       toast.error("Failed to delete post", {
@@ -55,16 +53,10 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
     }
 
     setIsDeleting(false);
-    setDeletingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(postToDelete.id);
-      return next;
-    });
   };
 
   const handleDialogOpenChange = (open: boolean) => {
     if (!open && !isDeleting) {
-      setIsDialogOpen(false);
       setPostToDelete(null);
     }
   };
@@ -108,14 +100,14 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
             key={post.id}
             post={post}
             onDelete={handleDeleteRequest}
-            isDeleting={deletingIds.has(post.id)}
+            isDeleting={isDeleting && postToDelete?.id === post.id}
           />
         ))}
       </div>
 
       <DeletePostDialog
         post={postToDelete}
-        open={isDialogOpen}
+        open={postToDelete !== null}
         onOpenChange={handleDialogOpenChange}
         onConfirm={handleConfirmDelete}
         isDeleting={isDeleting}
