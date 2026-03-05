@@ -28,7 +28,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-[1280px] px-4 py-10 sm:px-8 lg:px-20">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-8 lg:px-20">
         {/* Filter bar */}
         <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
           {/* Title section */}

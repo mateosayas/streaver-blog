@@ -29,7 +29,7 @@
 
 ## Offline UX
 
-- The challenge mentions users with bad or unstable internet connections. This is addressed with:
+- To improve the UX experience of users with poor/ubstable internet connection, the following were considered:
   - Optimistic UI updates for deletion (instant visual feedback)
   - Error recovery with retry actions when requests fail
   - Offline detection banner to set user expectations

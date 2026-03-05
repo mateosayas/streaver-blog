@@ -19,46 +19,57 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [postToDelete, setPostToDelete] = useState<PostWithUser | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // Tracks in-flight deletions to disable the delete button on affected cards and prevent double-deletion
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const handleDeleteRequest = (id: number) => {
     const post = posts.find((p) => p.id === id);
-
-    if (!post || isDeleting) return;
-
+    if (!post || deletingIds.has(id)) return;
     setPostToDelete(post);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!postToDelete) return;
+  const handleConfirmDelete = async (postId: number) => {
+    const postIndex = posts.findIndex((p) => p.id === postId);
+    const removedPost = posts[postIndex];
+    if (!removedPost || postIndex === -1) return;
 
-    setIsDeleting(true);
+    // Optimistic: close dialog and remove card immediately
+    setDeletingIds((prev) => new Set(prev).add(postId));
+    setPostToDelete(null);
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
 
-    const result = await deletePost(postToDelete.id);
+    const result = await deletePost(postId);
+
+    setDeletingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(postId);
+      return next;
+    });
 
     if (result.success) {
-      setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
-      router.refresh();
-      setPostToDelete(null);
-
       toast.success("Post deleted successfully");
-    } else {
-      toast.error("Failed to delete post", {
-        description: result.error?.message,
-        action: {
-          label: "Retry",
-          onClick: () => handleConfirmDelete(),
-        },
-      });
+      // Sync server cache so stale data never reappears after navigation or filter changes
+      return router.refresh();
     }
 
-    setIsDeleting(false);
+    // Rollback: re-insert at original position
+    setPosts((prev) => {
+      const updated = [...prev];
+      updated.splice(postIndex, 0, removedPost);
+      return updated;
+    });
+
+    toast.error("Failed to delete post", {
+      description: result.error?.message,
+      action: {
+        label: "Retry",
+        onClick: () => handleConfirmDelete(postId),
+      },
+    });
   };
 
   const handleDialogOpenChange = (open: boolean) => {
-    if (!open && !isDeleting) {
-      setPostToDelete(null);
-    }
+    if (!open) setPostToDelete(null);
   };
 
   const handleViewAll = () => {
@@ -68,12 +79,12 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
-        <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[12px] bg-[#F0EEE9]">
+        <div className="flex h-13 w-13 items-center justify-center rounded-[12px] bg-[#F0EEE9]">
           <FileText className="text-muted-foreground h-6 w-6" />
         </div>
         <div className="flex flex-col gap-2">
           <p className="text-foreground text-[17px] font-bold tracking-[-0.02em]">No posts found</p>
-          <p className="text-muted-foreground max-w-[240px] text-[14px] leading-[21px]">
+          <p className="text-muted-foreground max-w-60 text-[14px] leading-5.25">
             {hasFilter
               ? "No posts match this filter. Try selecting a different author."
               : "There are no posts to display."}
@@ -82,7 +93,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
         {hasFilter && (
           <Button
             variant="outline"
-            className="h-9 rounded-lg border-[#E5E3DC] px-[18px]"
+            className="h-9 rounded-lg border-[#E5E3DC] px-4.5"
             onClick={handleViewAll}
           >
             View all posts
@@ -100,7 +111,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
             key={post.id}
             post={post}
             onDelete={handleDeleteRequest}
-            isDeleting={isDeleting && postToDelete?.id === post.id}
+            isDeleting={deletingIds.has(post.id)}
           />
         ))}
       </div>
@@ -109,8 +120,8 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
         post={postToDelete}
         open={postToDelete !== null}
         onOpenChange={handleDialogOpenChange}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeleting}
+        onConfirm={() => postToDelete && handleConfirmDelete(postToDelete.id)}
+        isDeleting={false}
       />
     </>
   );
