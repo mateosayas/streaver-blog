@@ -5,4 +5,4 @@ export type PostWithUser = Post & {
 };
 
 // Re-export API response types for client-side use
-export type { ApiSuccessResponse, ApiErrorResponse, ApiResponse } from "@/lib/api-response";
+export type { ApiSuccessResponse, ApiErrorResponse, ApiResponse } from "@/lib/api/types";
