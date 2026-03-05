@@ -1,7 +1,7 @@
 import { getPosts, getUsers } from "@/lib/data/posts";
-import { PostList } from "@/components/post-list";
-import { ALL_USERS_VALUE, PostsFilter } from "@/components/posts-filter";
-import { SiteHeader } from "@/components/site-header";
+import { PostList } from "@/components/posts/post-list";
+import { ALL_USERS_VALUE, PostsFilter } from "@/components/posts/posts-filter";
+import { SiteHeader } from "@/components/layout/site-header";
 
 type PostsPageProps = {
   searchParams: Promise<{ userId?: string }>;

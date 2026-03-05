@@ -23,11 +23,9 @@ export function PostsFilter({ users }: PostsFilterProps) {
   );
 
   const handleValueChange = (value: string) => {
-    if (value === ALL_USERS_VALUE) {
-      setUserId(null);
-    } else {
-      setUserId(Number(value));
-    }
+    if (value === ALL_USERS_VALUE) return setUserId(null);
+    
+    setUserId(Number(value));
   };
 
   const sortedUsers = [...users].sort((a, b) => a.name.localeCompare(b.name));

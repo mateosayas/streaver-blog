@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
-import { PostCard } from "@/components/post-card";
-import { DeletePostDialog } from "@/components/delete-post-dialog";
+import { PostCard } from "@/components/posts/post-card";
+import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
 import { Button } from "@/components/ui/button";
 import { deletePost } from "@/lib/api";
 import type { PostWithUser } from "@/types";
