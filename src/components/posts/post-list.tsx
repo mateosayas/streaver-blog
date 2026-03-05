@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
+import { toast } from "sonner";
 import { PostCard } from "@/components/posts/post-card";
 import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,15 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
       router.refresh();
       setIsDialogOpen(false);
       setPostToDelete(null);
+      toast.success("Post deleted successfully");
+    } else {
+      toast.error("Failed to delete post", {
+        description: result.error?.message,
+        action: {
+          label: "Retry",
+          onClick: () => handleConfirmDelete(),
+        },
+      });
     }
 
     setIsDeleting(false);

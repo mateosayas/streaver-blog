@@ -35,6 +35,11 @@
   - Offline detection banner to set user expectations
   - Disabled destructive actions when offline
 
+## Error Boundaries
+
+- Next.js's `error.tsx` file convention is used instead of `react-error-boundary`. It automatically wraps each route segment in a React Error Boundary and renders the error UI when a Server Component (or Data Access Layer call) throws. This covers the only real server-side failure surface in this app.
+- `react-error-boundary` would add value in a more complex application where multiple independent widgets share the same page — for example, a sidebar, a feed, and a recommendations panel — and you want one to fail without blanking the entire page. In that scenario, each widget would be wrapped in its own boundary with a localized fallback. For a single-route CRUD app, this is unnecessary complexity.
+
 ## API Design
 
 - API routes are versioned under `/api/v1/` for future extensibility.
