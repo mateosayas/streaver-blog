@@ -7,9 +7,9 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
-import { truncateText } from "@/lib/utils/truncate";
-import { getInitials } from "@/lib/utils/initials";
 import type { PostWithUser } from "@/types";
+import { truncateText } from "@/utils/truncate";
+import { getInitials } from "@/utils/initials";
 
 interface PostCardProps {
   post: PostWithUser;
