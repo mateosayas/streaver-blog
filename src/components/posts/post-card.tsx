@@ -8,10 +8,11 @@ import { getInitials } from "@/utils/initials";
 type PostCardProps = {
   post: PostWithUser;
   isDeleting?: boolean;
+  disabled?: boolean;
   onDelete: (id: number) => void;
 };
 
-export function PostCard({ post, onDelete, isDeleting = false }: PostCardProps) {
+export function PostCard({ post, onDelete, isDeleting = false, disabled = false }: PostCardProps) {
   return (
     <Card
       className={cn("flex flex-col gap-3.5 p-6 transition-opacity", isDeleting && "opacity-50")}
@@ -31,7 +32,7 @@ export function PostCard({ post, onDelete, isDeleting = false }: PostCardProps) 
           size="icon"
           className="text-muted-foreground hover:text-destructive hover:border-destructive/40 h-7 w-7 shrink-0"
           onClick={() => onDelete(post.id)}
-          disabled={isDeleting}
+          disabled={isDeleting || disabled}
           aria-label={`Delete post: ${post.title}`}
         >
           <Trash2 className="h-3.5 w-3.5" />

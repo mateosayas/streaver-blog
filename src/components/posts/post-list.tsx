@@ -8,6 +8,7 @@ import { PostCard } from "@/components/posts/post-card";
 import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
 import { Button } from "@/components/ui/button";
 import { deletePost } from "@/lib/api";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { PostWithUser } from "@/types";
 
 type PostListProps = {
@@ -17,6 +18,8 @@ type PostListProps = {
 
 export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const router = useRouter();
+  const { isOnline } = useOnlineStatus();
+
   const [posts, setPosts] = useState(initialPosts);
   const [postToDelete, setPostToDelete] = useState<PostWithUser | null>(null);
   // Tracks in-flight deletions to disable the delete button on affected cards and prevent double-deletion
@@ -112,6 +115,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
             post={post}
             onDelete={handleDeleteRequest}
             isDeleting={deletingIds.has(post.id)}
+            disabled={!isOnline}
           />
         ))}
       </div>
