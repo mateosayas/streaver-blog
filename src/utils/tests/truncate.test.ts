@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateText } from "../truncate";
+import { truncateText } from "@/utils/truncate";
 
 describe("truncateText", () => {
   it.each([

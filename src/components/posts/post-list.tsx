@@ -12,7 +12,7 @@ import type { PostWithUser } from "@/types";
 type PostListProps = {
   initialPosts: PostWithUser[];
   hasFilter?: boolean;
-}
+};
 
 export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const router = useRouter();
@@ -65,22 +65,24 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
 
   if (posts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center gap-5">
+      <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
         <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[12px] bg-[#F0EEE9]">
-          <FileText className="h-6 w-6 text-muted-foreground" />
+          <FileText className="text-muted-foreground h-6 w-6" />
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-[17px] font-bold tracking-[-0.02em] text-foreground">
-            No posts found
-          </p>
-          <p className="text-[14px] leading-[21px] text-muted-foreground max-w-[240px]">
+          <p className="text-foreground text-[17px] font-bold tracking-[-0.02em]">No posts found</p>
+          <p className="text-muted-foreground max-w-[240px] text-[14px] leading-[21px]">
             {hasFilter
               ? "No posts match this filter. Try selecting a different author."
               : "There are no posts to display."}
           </p>
         </div>
         {hasFilter && (
-          <Button variant="outline" className="h-9 rounded-lg px-[18px] border-[#E5E3DC]" onClick={handleViewAll}>
+          <Button
+            variant="outline"
+            className="h-9 rounded-lg border-[#E5E3DC] px-[18px]"
+            onClick={handleViewAll}
+          >
             View all posts
           </Button>
         )}

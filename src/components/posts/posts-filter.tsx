@@ -14,7 +14,7 @@ export const ALL_USERS_VALUE = "all";
 
 type PostsFilterProps = {
   users: User[];
-}
+};
 
 export function PostsFilter({ users }: PostsFilterProps) {
   const [userId, setUserId] = useQueryState(
@@ -24,7 +24,7 @@ export function PostsFilter({ users }: PostsFilterProps) {
 
   const handleValueChange = (value: string) => {
     if (value === ALL_USERS_VALUE) return setUserId(null);
-    
+
     setUserId(Number(value));
   };
 
@@ -33,17 +33,14 @@ export function PostsFilter({ users }: PostsFilterProps) {
   const selectedLabel = selectedUser?.name ?? "All Users";
 
   return (
-    <Select
-      value={userId?.toString() ?? ALL_USERS_VALUE}
-      onValueChange={handleValueChange}
-    >
+    <Select value={userId?.toString() ?? ALL_USERS_VALUE} onValueChange={handleValueChange}>
       <SelectTrigger className="h-10 w-full justify-start rounded-lg border-[#E5E3DC] bg-white px-[14px] shadow-none focus-visible:ring-0 lg:w-auto lg:min-w-[213px] [&_[data-slot=select-value]]:hidden">
-        <span className="shrink-0 text-[13px] font-normal text-muted-foreground lg:text-[14px] lg:font-medium lg:text-foreground">
+        <span className="text-muted-foreground lg:text-foreground shrink-0 text-[13px] font-normal lg:text-[14px] lg:font-medium">
           Filter by author
         </span>
         {/* Hidden SelectValue keeps Radix internal state in sync */}
         <SelectValue />
-        <span className="ml-auto text-[13px] font-medium text-foreground lg:text-[12px] lg:font-normal lg:text-muted-foreground">
+        <span className="text-foreground lg:text-muted-foreground ml-auto text-[13px] font-medium lg:text-[12px] lg:font-normal">
           {selectedLabel}
         </span>
       </SelectTrigger>

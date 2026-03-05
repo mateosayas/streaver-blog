@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getInitials } from "../initials";
+import { getInitials } from "@/utils/initials";
 
 describe("getInitials", () => {
   it.each([

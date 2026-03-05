@@ -13,6 +13,7 @@ A Next.js blog application that lists posts, allows filtering by author, and sup
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - npm
 

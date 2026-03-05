@@ -25,10 +25,7 @@ async function main() {
   console.log("\n🌱 Starting seed...\n");
 
   console.log("Fetching data from JSONPlaceholder...");
-  const [usersResponse, postsResponse] = await Promise.all([
-    fetch(USERS_API),
-    fetch(POSTS_API),
-  ]);
+  const [usersResponse, postsResponse] = await Promise.all([fetch(USERS_API), fetch(POSTS_API)]);
 
   if (!usersResponse.ok) {
     throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);

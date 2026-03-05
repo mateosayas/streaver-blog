@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { truncateText } from "@/utils/truncate";
 import type { PostWithUser } from "@/types";
 
 type DeletePostDialogProps = {
@@ -18,7 +17,7 @@ type DeletePostDialogProps = {
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   isDeleting: boolean;
-}
+};
 
 export function DeletePostDialog({
   post,
@@ -33,17 +32,15 @@ export function DeletePostDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[440px] gap-6 rounded-[14px] p-8 shadow-[0_20px_60px_rgba(28,28,46,0.18)]">
         <div className="flex flex-col gap-3">
-          <DialogTitle className="text-[18px] font-bold leading-snug tracking-[-0.02em] text-foreground">
+          <DialogTitle className="text-foreground text-[18px] leading-snug font-bold tracking-[-0.02em]">
             Delete this post?
           </DialogTitle>
           <DialogDescription asChild>
-            <div className="flex flex-col gap-1 text-[14px] leading-[22px] text-muted-foreground">
+            <div className="text-muted-foreground flex flex-col gap-1 text-[14px] leading-[22px]">
               <p>
                 This will remove{" "}
-                <strong className="font-semibold text-foreground">
-                  {truncateText(post.title, 60)}
-                </strong>{" "}
-                from the list.
+                <strong className="text-foreground font-semibold">{post.title}</strong> from the
+                list.
               </p>
               <p>This action cannot be undone.</p>
             </div>
@@ -53,14 +50,14 @@ export function DeletePostDialog({
         <DialogFooter className="gap-2">
           <Button
             variant="outline"
-            className="h-[38px] rounded-lg px-[18px] border-[#E5E3DC]"
+            className="h-[38px] rounded-lg border-[#E5E3DC] px-[18px]"
             onClick={() => onOpenChange(false)}
             disabled={isDeleting}
           >
             Cancel
           </Button>
           <Button
-            className="h-[38px] rounded-lg px-[18px] bg-destructive text-white hover:bg-destructive/90"
+            className="bg-destructive hover:bg-destructive/90 h-[38px] rounded-lg px-[18px] text-white"
             onClick={onConfirm}
             disabled={isDeleting}
           >

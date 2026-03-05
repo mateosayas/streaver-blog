@@ -19,7 +19,6 @@ function getDatabaseUrl(): string {
 }
 
 export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({ datasources: { db: { url: getDatabaseUrl() } } });
+  globalForPrisma.prisma || new PrismaClient({ datasources: { db: { url: getDatabaseUrl() } } });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
