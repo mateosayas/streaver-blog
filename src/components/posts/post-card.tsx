@@ -38,7 +38,7 @@ export function PostCard({ post, onDelete, isDeleting = false }: PostCardProps) 
         </Button>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-2 p-0">
+      <CardContent className="flex flex-1 flex-col gap-2 p-0">
         <h3 className="text-foreground text-[16px] leading-snug font-bold tracking-[-0.02em]">
           {post.title}
         </h3>
