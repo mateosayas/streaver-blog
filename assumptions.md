@@ -1,65 +1,158 @@
 # Assumptions
 
-## Authentication
+This document outlines design decisions and scope boundaries made while implementing the challenge.
 
-- No authentication is implemented. The challenge describes "users of the application" as readers/consumers who list, filter, and delete posts. There is no mention of login, registration, or user-specific permissions. Adding auth would exceed the scope of the challenge.
+---
 
-## Database
+# Authentication
 
-- Plain SQLite with Prisma ORM as suggested by the challenge.
-- The `.env` file is committed to the repository intentionally per the challenge instructions to simplify local setup. In a production environment, this would be in `.gitignore` and managed via environment variables.
-- For a production deployment, SQLite should be swapped for a hosted solution like Turso (SQLite-compatible) or PostgreSQL.
+Authentication was intentionally not implemented.
 
-## Data
+The challenge describes users as readers who can list, filter, and delete posts but does not specify login, authorization, or ownership rules. Adding authentication would significantly expand the scope beyond the requirements.
 
-- Seed data comes from JSONPlaceholder API (10 users, 100 posts).
-- The seed script is idempotent — safe to run multiple times.
+Some product ideas that could be implemented after authentication is:
 
-## Data Access Layer
+- Ownership-based permissions — users could only delete posts they authored.
+- Role-based access control — administrators or moderators could manage all posts while regular users could only manage their own content.
+- Personalized views — users could view a dashboard of their own posts or drafts.
+- Auditability — deletion actions could be tracked with deletedBy metadata to identify which user performed the action.
+- Improved moderation workflows — posts could be flagged, hidden, or restored by moderators rather than permanently deleted.
 
-- All database access goes through `src/lib/data/`. Server Components call DAL functions directly during SSR for reads; the DELETE route handler calls `softDeletePost` from the DAL for its mutation. This keeps Prisma out of route handlers and ensures all DB logic is in one place.
+---
 
-## Data fetching strategy
+# Database
 
-- TanStack Query was considered but not included. The application's read path (/posts) is fully server-rendered via Server Components and the Data Access Layer, eliminating the need for client-side caching or background refetching. The single mutation (delete) is handled with optimistic local state and router.refresh() for server sync. For a more complex application with client-side reads, polling, or multiple interdependent mutations, TanStack Query would be the natural addition.
+- SQLite with Prisma ORM was used as suggested in the challenge.
+- The `.env` file is committed to the repository intentionally, as required by the challenge instructions, to simplify local setup.
 
-## Post Deletion
+---
 
-- Soft delete is implemented using a `deletedAt` timestamp. Posts are never permanently removed from the database. This is safer, supports potential undo/restore features, and is more production-realistic. Deleted posts are filtered out of all GET queries.
+# Seed Data
 
-## Pagination
+Initial data is sourced from:
 
-- Not implemented. The dataset is 100 posts, which is manageable without pagination. For a larger dataset, offset-based or cursor-based pagination would be added to the posts page.
+- https://jsonplaceholder.typicode.com/users
+- https://jsonplaceholder.typicode.com/posts
 
-## Offline UX
+The seed script imports this data into the database and is **idempotent**, meaning it can be run multiple times safely.
 
-- To improve the UX experience of users with poor/ubstable internet connection, the following were considered:
-  - Optimistic UI updates for deletion (instant visual feedback)
-  - Error recovery with retry actions when requests fail
-  - Offline detection banner to set user expectations
-  - Disabled destructive actions when offline
+---
 
-## Error Boundaries
+# Data Access Layer
 
-- Next.js's `error.tsx` file convention is used instead of `react-error-boundary`. It automatically wraps each route segment in a React Error Boundary and renders the error UI when a Server Component (or Data Access Layer call) throws. This covers the only real server-side failure surface in this app.
-- `react-error-boundary` would add value in a more complex application where multiple independent widgets share the same page — for example, a sidebar, a feed, and a recommendations panel — and you want one to fail without blanking the entire page. In that scenario, each widget would be wrapped in its own boundary with a localized fallback. For a single-route CRUD app, this is unnecessary complexity.
+All database interactions are implemented inside `src/lib/data/`.
 
-## API Design
+Server Components call DAL functions directly during server rendering for reads, while API route handlers reuse the same functions for mutations.
 
-- API routes are versioned under `/api/v1/` for future extensibility.
-- All responses follow a standardized envelope pattern for predictable client-side consumption.
-- Input validation uses Zod at every API boundary.
+This keeps Prisma isolated from route handlers and UI components and centralizes database logic in one location.
 
-## URL State Management
+---
 
-- `nuqs` is used for the `userId` filter query parameter instead of `useState` or manual `URLSearchParams` manipulation. It provides type-safe, server-aware URL state: the filter value is parsed and validated on the server during SSR (so the page renders already-filtered data without a client-side fetch), and the URL updates without a full navigation so the browser history stays clean. Plain `useState` would lose the filter on refresh; `useSearchParams` with manual updates is verbose and error-prone.
+# Data Fetching Strategy
 
-## UI & Styling
+The `/posts` page fetches data directly during server rendering using Server Components.
 
-- Tailwind CSS with shadcn/ui components for accessible, customizable primitives.
-- Mobile-first responsive design.
+The page reads `searchParams` to filter posts by `userId`. Because of this, Next.js treats the route as **dynamic**, meaning it is rendered on each request rather than statically generated.
 
-## Testing
+Since the data layer uses Prisma instead of `fetch`, Next.js's Data Cache does not apply. Each request therefore performs a fresh database query.
 
-- Vitest with React Testing Library for unit testing of key components and utility functions.
-- E2E testing is out of scope but would be the next step (Playwright recommended).
+Client-side data fetching libraries such as TanStack Query were considered but are unnecessary for this application because:
+
+- reads occur during server rendering
+- there is only a single mutation
+- optimistic UI updates are handled locally
+
+For a larger application with multiple client-side queries or background refetching, TanStack Query would likely be introduced.
+
+---
+
+# Post Deletion
+
+Posts use a **soft delete** mechanism implemented through a `deletedAt` timestamp rather than being permanently removed.
+
+This mirrors common production patterns where records are rarely hard-deleted and allows potential future features such as restoring posts or maintaining audit history.
+
+All read queries exclude records where `deletedAt` is not `null`.
+
+---
+
+# Pagination
+
+Pagination was intentionally not implemented.
+
+The seeded dataset contains only 100 posts, which is manageable to render without pagination.
+
+For larger datasets, either offset-based or cursor-based pagination would be introduced.
+
+---
+
+# Offline UX
+
+The challenge mentions that users frequently experience poor or unstable network connections. To improve the user experience in these situations, the following patterns were implemented:
+
+- optimistic UI updates when deleting posts
+- retry actions for failed requests
+- an offline detection banner
+- destructive actions disabled while offline
+
+These patterns ensure the interface remains responsive even when network conditions are unreliable.
+
+---
+
+# Error Handling
+
+Next.js's `error.tsx` route convention is used to handle server-side rendering failures.
+
+This automatically wraps the route in a React Error Boundary and renders fallback UI if a Server Component throws.
+
+In this application, server rendering and database access represent the primary failure surfaces.
+
+---
+
+# API Design
+
+API routes are versioned under `/api/v1/`.
+
+All responses follow a consistent envelope format:
+
+```
+{ success: true, data }
+{ success: false, error: { code, message } }
+```
+
+Input validation is performed using **Zod** before any database operations occur.
+
+---
+
+# URL State Management
+
+The `userId` filter is stored in the URL query string.
+
+The `nuqs` library provides a type-safe abstraction for managing query parameters that works consistently in both Server and Client Components.
+
+This allows:
+
+- server-rendered filtered results
+- shareable URLs
+- persistence across refreshes
+- predictable browser navigation behavior
+
+---
+
+# UI & Styling
+
+The UI uses **Tailwind CSS** and **shadcn/ui** components to provide accessible and composable primitives.
+
+---
+
+# Testing
+
+Unit tests are implemented using **Vitest** and **React Testing Library**.
+
+Tests focus on:
+
+- Important UI components
+- validation schemas
+- helper utilities
+
+End-to-end testing is outside the scope of this challenge but would likely be implemented using **Playwright** in a production environment.
