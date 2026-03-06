@@ -129,12 +129,6 @@ The challenge requires the repository to include the environment variables neede
 
 The `.env` file is therefore committed intentionally to simplify local setup.
 
-For reference, the application currently requires:
-
-```
-DATABASE_URL=xxxxxxxxxxx
-```
-
 ---
 
 ## Database Setup
