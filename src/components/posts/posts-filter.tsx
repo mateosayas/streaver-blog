@@ -34,7 +34,10 @@ export function PostsFilter({ users }: PostsFilterProps) {
 
   return (
     <Select value={userId?.toString() ?? ALL_USERS_VALUE} onValueChange={handleValueChange}>
-      <SelectTrigger className="h-10 w-full justify-start rounded-lg border-[#E5E3DC] bg-white px-[14px] shadow-none focus-visible:ring-0 lg:w-auto lg:min-w-[213px] [&_[data-slot=select-value]]:hidden">
+      <SelectTrigger
+        aria-label="Filter by author"
+        className="h-10 w-full justify-start rounded-lg border-[#E5E3DC] bg-white px-[14px] shadow-none focus-visible:ring-0 lg:w-auto lg:min-w-[213px] [&_[data-slot=select-value]]:hidden"
+      >
         <span className="text-muted-foreground lg:text-foreground shrink-0 text-[13px] font-normal lg:text-[14px] lg:font-medium">
           Filter by author
         </span>
