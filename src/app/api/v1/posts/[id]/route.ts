@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { apiSuccess, apiError } from "@/lib/api/response";
 import { API_ERROR_CODES } from "@/lib/api/types";
 import { postIdParamSchema } from "@/lib/validations";
+import { softDeletePost } from "@/lib/data/posts";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -21,11 +21,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const existingPost = await prisma.post.findFirst({
-      where: { id: postIdValidation.data, deletedAt: null },
-    });
+    const result = await softDeletePost(postIdValidation.data);
 
-    if (!existingPost) {
+    if (!result) {
       return apiError(
         API_ERROR_CODES.NOT_FOUND,
         `Post with id ${postIdValidation.data} not found`,
@@ -33,12 +31,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await prisma.post.update({
-      where: { id: postIdValidation.data },
-      data: { deletedAt: new Date() },
-    });
-
-    return apiSuccess({ id: postIdValidation.data });
+    return apiSuccess(result);
   } catch (error) {
     console.error("DELETE /api/v1/posts/[id] error:", error);
     return apiError(

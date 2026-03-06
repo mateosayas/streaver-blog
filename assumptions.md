@@ -15,6 +15,10 @@
 - Seed data comes from JSONPlaceholder API (10 users, 100 posts).
 - The seed script is idempotent — safe to run multiple times.
 
+## Data Access Layer
+
+- All database access goes through `src/lib/data/`. Server Components call DAL functions directly during SSR for reads; the DELETE route handler calls `softDeletePost` from the DAL for its mutation. This keeps Prisma out of route handlers and ensures all DB logic is in one place.
+
 ## Data fetching strategy
 
 - TanStack Query was considered but not included. The application's read path (/posts) is fully server-rendered via Server Components and the Data Access Layer, eliminating the need for client-side caching or background refetching. The single mutation (delete) is handled with optimistic local state and router.refresh() for server sync. For a more complex application with client-side reads, polling, or multiple interdependent mutations, TanStack Query would be the natural addition.
@@ -45,6 +49,10 @@
 - API routes are versioned under `/api/v1/` for future extensibility.
 - All responses follow a standardized envelope pattern for predictable client-side consumption.
 - Input validation uses Zod at every API boundary.
+
+## URL State Management
+
+- `nuqs` is used for the `userId` filter query parameter instead of `useState` or manual `URLSearchParams` manipulation. It provides type-safe, server-aware URL state: the filter value is parsed and validated on the server during SSR (so the page renders already-filtered data without a client-side fetch), and the URL updates without a full navigation so the browser history stays clean. Plain `useState` would lose the filter on refresh; `useSearchParams` with manual updates is verbose and error-prone.
 
 ## UI & Styling
 
