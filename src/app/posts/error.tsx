@@ -14,9 +14,9 @@ export default function PostsError({ reset }: ErrorProps) {
         <AlertCircle className="text-destructive h-6 w-6" />
       </div>
       <div className="flex flex-col gap-2">
-        <p className="text-foreground text-[17px] font-bold tracking-[-0.02em]">
+        <h2 className="text-foreground text-[17px] font-bold tracking-[-0.02em]">
           Something went wrong
-        </p>
+        </h2>
         <p className="text-muted-foreground max-w-65 text-[14px] leading-5.25">
           We couldn&apos;t load the posts. Check your connection and try again.
         </p>

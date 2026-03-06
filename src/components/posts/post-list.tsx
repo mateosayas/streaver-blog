@@ -22,7 +22,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
 
   const [posts, setPosts] = useState(initialPosts);
   const [postToDelete, setPostToDelete] = useState<PostWithUser | null>(null);
-  // Tracks in-flight deletions to disable the delete button on affected cards and prevent double-deletion
+  // Tracks in-flight deletions to disable the delete button on affected cards and prevent double-deletion in poor connections scenarios
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const handleDeleteRequest = (id: number) => {
@@ -79,32 +79,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
     router.push("/posts");
   };
 
-  if (posts.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
-        <div className="flex h-13 w-13 items-center justify-center rounded-[12px] bg-[#F0EEE9]">
-          <FileText className="text-muted-foreground h-6 w-6" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-foreground text-[17px] font-bold tracking-[-0.02em]">No posts found</p>
-          <p className="text-muted-foreground max-w-60 text-[14px] leading-5.25">
-            {hasFilter
-              ? "No posts match this filter. Try selecting a different author."
-              : "There are no posts to display."}
-          </p>
-        </div>
-        {hasFilter && (
-          <Button
-            variant="outline"
-            className="h-9 rounded-lg border-[#E5E3DC] px-4.5"
-            onClick={handleViewAll}
-          >
-            View all posts
-          </Button>
-        )}
-      </div>
-    );
-  }
+  if (posts.length === 0) return <EmptyState hasFilter={hasFilter} handleViewAll={handleViewAll} />;
 
   return (
     <>
@@ -128,5 +103,38 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
         isDeleting={false}
       />
     </>
+  );
+}
+
+function EmptyState({
+  hasFilter,
+  handleViewAll,
+}: {
+  hasFilter: boolean;
+  handleViewAll: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
+      <div className="flex h-13 w-13 items-center justify-center rounded-[12px] bg-[#F0EEE9]">
+        <FileText className="text-muted-foreground h-6 w-6" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-foreground text-[17px] font-bold tracking-[-0.02em]">No posts found</h2>
+        <p className="text-muted-foreground max-w-60 text-[14px] leading-5.25">
+          {hasFilter
+            ? "No posts match this filter. Try selecting a different author."
+            : "There are no posts to display."}
+        </p>
+      </div>
+      {hasFilter && (
+        <Button
+          variant="outline"
+          className="h-9 rounded-lg border-[#E5E3DC] px-4.5"
+          onClick={handleViewAll}
+        >
+          View all posts
+        </Button>
+      )}
+    </div>
   );
 }
