@@ -22,7 +22,7 @@ type JSONPlaceholderPost = {
 };
 
 async function main() {
-  console.log("\n🌱 Starting seed...\n");
+  console.log("\nStarting seed...\n");
 
   console.log("Fetching data from JSONPlaceholder...");
   const [usersResponse, postsResponse] = await Promise.all([fetch(USERS_API), fetch(POSTS_API)]);
@@ -67,14 +67,14 @@ async function main() {
     });
   });
 
-  console.log("\n✅ Seed completed successfully!");
+  console.log("\nSeed completed successfully.");
   console.log(`   → ${usersData.length} users`);
   console.log(`   → ${postsData.length} posts`);
 }
 
 main()
   .catch((e) => {
-    console.error("\n❌ Seed failed:", e);
+    console.error("\nSeed failed:", e);
     process.exit(1);
   })
   .finally(async () => {
