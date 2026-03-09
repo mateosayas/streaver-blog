@@ -28,6 +28,7 @@ export async function getPosts(userId?: number) {
 
 export async function getUsers() {
   return prisma.user.findMany({
+    where: { role: "user" },
     orderBy: { name: "asc" },
   });
 }
