@@ -9,6 +9,7 @@ import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
 import { StatusMessage } from "@/components/ui/status-message";
 import { deletePost } from "@/lib/api";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useCanDeletePost } from "@/hooks/use-can-delete-post";
 import type { UserPost } from "@/types/posts";
 
 type PostListProps = {
@@ -18,6 +19,8 @@ type PostListProps = {
 
 export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const router = useRouter();
+
+  const canDeletePost = useCanDeletePost();
   const { isOnline } = useOnlineStatus();
 
   const [posts, setPosts] = useState(initialPosts);
@@ -91,6 +94,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
             onDelete={handleDeleteRequest}
             isDeleting={deletingIds.has(post.id)}
             disabled={!isOnline}
+            canDelete={canDeletePost(post)}
           />
         ))}
       </div>

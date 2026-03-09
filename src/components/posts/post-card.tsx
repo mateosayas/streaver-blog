@@ -9,10 +9,17 @@ type PostCardProps = {
   post: UserPost;
   isDeleting?: boolean;
   disabled?: boolean;
+  canDelete?: boolean;
   onDelete: (id: number) => void;
 };
 
-export function PostCard({ post, onDelete, isDeleting = false, disabled = false }: PostCardProps) {
+export function PostCard({
+  post,
+  onDelete,
+  isDeleting = false,
+  disabled = false,
+  canDelete = false,
+}: PostCardProps) {
   return (
     <Card
       className={cn(
@@ -30,16 +37,18 @@ export function PostCard({ post, onDelete, isDeleting = false, disabled = false 
         </div>
 
         {/* Delete button */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive hover:border-destructive/40 h-7 w-7 shrink-0 cursor-pointer"
-          onClick={() => onDelete(post.id)}
-          disabled={isDeleting || disabled}
-          aria-label={`Delete post: ${post.title}`}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        {canDelete && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive hover:border-destructive/40 h-7 w-7 shrink-0 cursor-pointer"
+            onClick={() => onDelete(post.id)}
+            disabled={isDeleting || disabled}
+            aria-label={`Delete post: ${post.title}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-2 p-0">
