@@ -24,7 +24,7 @@ export function PostCardSkeleton() {
       </CardContent>
 
       {/* Footer: post ID */}
-      <CardFooter className="border-t border-[#F0EEE9] p-0 pt-1">
+      <CardFooter className="border-secondary border-t p-0 pt-1">
         <Skeleton className="h-3 w-14" />
       </CardFooter>
     </Card>

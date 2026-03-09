@@ -6,7 +6,7 @@ import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { PostCard } from "@/components/posts/post-card";
 import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
-import { Button } from "@/components/ui/button";
+import { StatusMessage } from "@/components/ui/status-message";
 import { deletePost } from "@/lib/api";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { PostWithUser } from "@/types";
@@ -100,7 +100,6 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
         open={postToDelete !== null}
         onOpenChange={handleDialogOpenChange}
         onConfirm={() => postToDelete && handleConfirmDelete(postToDelete.id)}
-        isDeleting={false}
       />
     </>
   );
@@ -114,27 +113,16 @@ function EmptyState({
   handleViewAll: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
-      <div className="flex h-13 w-13 items-center justify-center rounded-[12px] bg-[#F0EEE9]">
-        <FileText className="text-muted-foreground h-6 w-6" />
-      </div>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-foreground text-[17px] font-bold tracking-[-0.02em]">No posts found</h2>
-        <p className="text-muted-foreground max-w-60 text-[14px] leading-5.25">
-          {hasFilter
-            ? "No posts match this filter. Try selecting a different author."
-            : "There are no posts to display."}
-        </p>
-      </div>
-      {hasFilter && (
-        <Button
-          variant="outline"
-          className="h-9 rounded-lg border-[#E5E3DC] px-4.5"
-          onClick={handleViewAll}
-        >
-          View all posts
-        </Button>
-      )}
-    </div>
+    <StatusMessage
+      icon={<FileText className="text-muted-foreground h-6 w-6" aria-hidden="true" />}
+      iconWrapperClassName="flex h-13 w-13 items-center justify-center rounded-[12px] bg-secondary"
+      title="No posts found"
+      description={
+        hasFilter
+          ? "No posts match this filter. Try selecting a different author."
+          : "There are no posts to display."
+      }
+      action={hasFilter ? { label: "View all posts", onClick: handleViewAll } : undefined}
+    />
   );
 }

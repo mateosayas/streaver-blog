@@ -23,7 +23,7 @@ export function PostCard({ post, onDelete, isDeleting = false, disabled = false 
       <CardHeader className="flex flex-row items-center justify-between p-0">
         {/* Author */}
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1C1C2E] text-[11px] font-bold text-white">
+          <div className="bg-primary text-primary-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold">
             {getInitials(post.user.name)}
           </div>
           <span className="text-foreground text-[13px] font-medium">{post.user.name}</span>
@@ -51,7 +51,7 @@ export function PostCard({ post, onDelete, isDeleting = false, disabled = false 
         </p>
       </CardContent>
 
-      <CardFooter className="border-t border-[#F0EEE9] p-0 pt-1">
+      <CardFooter className="border-secondary border-t p-0 pt-1">
         <span className="text-muted-foreground text-[11px] font-medium tracking-[0.06em] uppercase">
           Post #{post.id}
         </span>

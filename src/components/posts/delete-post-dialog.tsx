@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,16 +15,9 @@ type DeletePostDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  isDeleting: boolean;
 };
 
-export function DeletePostDialog({
-  post,
-  open,
-  onOpenChange,
-  onConfirm,
-  isDeleting,
-}: DeletePostDialogProps) {
+export function DeletePostDialog({ post, open, onOpenChange, onConfirm }: DeletePostDialogProps) {
   if (!post) return null;
 
   return (
@@ -53,25 +45,16 @@ export function DeletePostDialog({
         <DialogFooter className="gap-2 max-sm:mt-auto">
           <Button
             variant="outline"
-            className="h-9.5 rounded-lg border-[#E5E3DC] px-4.5"
+            className="border-border h-9.5 rounded-lg px-4.5"
             onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
           >
             Cancel
           </Button>
           <Button
             className="bg-destructive hover:bg-destructive/90 h-9.5 rounded-lg px-4.5 text-white"
             onClick={onConfirm}
-            disabled={isDeleting}
           >
-            {isDeleting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Deleting…
-              </>
-            ) : (
-              "Delete post"
-            )}
+            Delete post
           </Button>
         </DialogFooter>
       </DialogContent>
