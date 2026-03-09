@@ -37,9 +37,14 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label
+          htmlFor="username"
+          className="text-[12px] font-medium tracking-[0.02em] text-[#4A4A5A]"
+        >
+          Username
+        </Label>
         <Input
           id="username"
           name="username"
@@ -47,11 +52,17 @@ export function LoginForm() {
           required
           autoComplete="username"
           placeholder="Enter your username"
+          className="h-11 rounded-lg border-transparent bg-[#ECEAE3] focus-visible:border-[#1A1A2E] focus-visible:ring-[#1A1A2E]/10"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      <div className="space-y-1.5">
+        <Label
+          htmlFor="password"
+          className="text-[12px] font-medium tracking-[0.02em] text-[#4A4A5A]"
+        >
+          Password
+        </Label>
         <Input
           id="password"
           name="password"
@@ -59,12 +70,17 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="Enter your password"
+          className="h-11 rounded-lg border-transparent bg-[#ECEAE3] focus-visible:border-[#1A1A2E] focus-visible:ring-[#1A1A2E]/10"
         />
       </div>
 
       {error && <p className="text-destructive text-sm">{error}</p>}
 
-      <Button type="submit" disabled={isLoading} className="w-full">
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="mt-1 h-11.5 w-full rounded-lg bg-[#1A1A2E] text-[14px] font-semibold tracking-[-0.01em] text-[#F2F1EC] hover:bg-[#1A1A2E]/90"
+      >
         {isLoading ? "Signing in…" : "Sign in"}
       </Button>
     </form>
