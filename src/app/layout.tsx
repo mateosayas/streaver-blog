@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineBanner } from "@/components/offline-banner";
 import "./globals.css";
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <NuqsAdapter>
-          <OfflineBanner />
-          {children}
-          <Toaster />
-        </NuqsAdapter>
+        <SessionProvider>
+          <NuqsAdapter>
+            <OfflineBanner />
+            {children}
+            <Toaster />
+          </NuqsAdapter>
+        </SessionProvider>
       </body>
     </html>
   );

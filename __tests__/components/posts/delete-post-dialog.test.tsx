@@ -21,7 +21,6 @@ function renderDialog(props: Partial<React.ComponentProps<typeof DeletePostDialo
       open
       onOpenChange={vi.fn()}
       onConfirm={vi.fn()}
-      isDeleting={false}
       {...props}
     />
   );
@@ -31,15 +30,7 @@ describe("DeletePostDialog", () => {
   it("shows post title in confirmation message", () => {
     const post = createMockPost({ title: "My Unique Post Title" });
 
-    render(
-      <DeletePostDialog
-        post={post}
-        open
-        onOpenChange={vi.fn()}
-        onConfirm={vi.fn()}
-        isDeleting={false}
-      />
-    );
+    render(<DeletePostDialog post={post} open onOpenChange={vi.fn()} onConfirm={vi.fn()} />);
 
     expect(screen.getByText("My Unique Post Title")).toBeInTheDocument();
   });
@@ -68,13 +59,7 @@ describe("DeletePostDialog", () => {
 
   it("renders nothing when post is null", () => {
     const { container } = render(
-      <DeletePostDialog
-        post={null}
-        open
-        onOpenChange={vi.fn()}
-        onConfirm={vi.fn()}
-        isDeleting={false}
-      />
+      <DeletePostDialog post={null} open onOpenChange={vi.fn()} onConfirm={vi.fn()} />
     );
 
     expect(container).toBeEmptyDOMElement();

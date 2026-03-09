@@ -1,4 +1,4 @@
-import type { UserPost } from "@/types";
+import type { UserPost } from "@/types/posts";
 import type { User } from "@/generated/prisma/client";
 
 export const createMockUser = (overrides: Partial<User> = {}): User => ({
@@ -6,6 +6,8 @@ export const createMockUser = (overrides: Partial<User> = {}): User => ({
   name: "John Doe",
   username: "johndoe",
   email: "john@example.com",
+  password: "hashed_password",
+  role: "user",
   phone: null,
   website: null,
   createdAt: new Date(),
