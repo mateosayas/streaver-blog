@@ -6,17 +6,21 @@ This document outlines design decisions and scope boundaries made while implemen
 
 # Authentication
 
-Authentication was intentionally not implemented.
+Authentication was added as an extension beyond the original challenge scope.
 
-The challenge describes users as readers who can list, filter, and delete posts but does not specify login, authorization, or ownership rules. Adding authentication would significantly expand the scope beyond the requirements.
+The following rules are enforced:
 
-Some product ideas that could be implemented after authentication is:
+- Unauthenticated users can browse and filter posts but cannot delete.
+- Authenticated regular users can only delete their own posts (`post.userId === session.userId`).
+- The `admin` user can delete any post regardless of ownership.
+- Authorization is enforced server-side in the API route — the client is never trusted.
 
-- Ownership-based permissions — users could only delete posts they authored.
-- Role-based access control — administrators or moderators could manage all posts while regular users could only manage their own content.
-- Personalized views — users could view a dashboard of their own posts or drafts.
-- Auditability — deletion actions could be tracked with deletedBy metadata to identify which user performed the action.
-- Improved moderation workflows — posts could be flagged, hidden, or restored by moderators rather than permanently deleted.
+**Implementation decisions:**
+
+- Passwords are hashed with **bcryptjs** (pure JavaScript — no native binaries or no C++ compiler required, so reviewers can `npm install` without platform issues).
+- No registration flow — users are seeded. In production, a registration flow would be added.
+- Admin credentials are intentionally simple (`admin` / `admin`) for evaluation purposes.
+- Default password for all seeded JSONPlaceholder users is `password123`.
 
 ---
 

@@ -1,12 +1,34 @@
+import "dotenv/config";
+import path from "path";
 import { PrismaClient } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+// Prisma's LibraryEngine resolves relative SQLite paths from the engine binary's
+// directory (src/generated/prisma/), not from CWD. Constructing an absolute path
+// from CWD ensures the seed finds the correct database regardless of call site.
+const dbUrl = process.env.DATABASE_URL?.startsWith("file:")
+  ? `file:${path.resolve(process.cwd(), process.env.DATABASE_URL.slice(5))}`
+  : process.env.DATABASE_URL;
 
-const BCRYPT_ROUNDS = 10;
+const prisma = new PrismaClient({ datasources: { db: { url: dbUrl } } });
 
 const USERS_API = "https://jsonplaceholder.typicode.com/users";
 const POSTS_API = "https://jsonplaceholder.typicode.com/posts";
+
+const SALT_ROUNDS = 10;
+
+const DEFAULT_USER_PASSWORD = "password123";
+const DEFAULT_ADMIN_PASSWORD = "admin";
+
+const ADMIN_USER = {
+  name: "Admin",
+  username: "admin",
+  email: "admin@streaver-blog.com",
+  password: DEFAULT_ADMIN_PASSWORD,
+  role: "admin",
+  phone: null,
+  website: null,
+};
 
 type JSONPlaceholderUser = {
   id: number;
@@ -25,7 +47,7 @@ type JSONPlaceholderPost = {
 };
 
 async function main() {
-  console.log("\nStarting seed...\n");
+  console.log("Starting seed...\n");
 
   console.log("Fetching data from JSONPlaceholder...");
   const [usersResponse, postsResponse] = await Promise.all([fetch(USERS_API), fetch(POSTS_API)]);
@@ -40,6 +62,10 @@ async function main() {
   const usersData = (await usersResponse.json()) as JSONPlaceholderUser[];
   const postsData = (await postsResponse.json()) as JSONPlaceholderPost[];
 
+  console.log("Hashing passwords...");
+  const adminPasswordHash = await bcrypt.hash(ADMIN_USER.password, SALT_ROUNDS);
+  const defaultPasswordHash = await bcrypt.hash(DEFAULT_USER_PASSWORD, SALT_ROUNDS);
+
   // Preserves idempotency — safe to run multiple times
   console.log("Clearing existing data and seeding...");
   // Transaction ensures all-or-nothing: no partial state if something fails
@@ -47,31 +73,31 @@ async function main() {
     await tx.post.deleteMany();
     await tx.user.deleteMany();
 
-    const defaultAdminPassword = await bcrypt.hash("admin", BCRYPT_ROUNDS);
+    console.log("Seeding admin user...");
+    await tx.user.create({
+      data: {
+        name: ADMIN_USER.name,
+        username: ADMIN_USER.username,
+        email: ADMIN_USER.email,
+        password: adminPasswordHash,
+        role: ADMIN_USER.role,
+        phone: ADMIN_USER.phone,
+        website: ADMIN_USER.website,
+      },
+    });
 
-    const defaultPassword = await bcrypt.hash("password", BCRYPT_ROUNDS);
-
-    console.log(`Seeding ${usersData.length} users + 1 admin...`);
+    console.log(`Seeding ${usersData.length} users...`);
     await tx.user.createMany({
-      data: [
-        {
-          id: 0,
-          name: "Admin",
-          username: "admin",
-          email: "admin@example.com",
-          password: defaultAdminPassword,
-          role: "admin",
-        },
-        ...usersData.map((user) => ({
-          id: user.id,
-          name: user.name,
-          username: user.username,
-          email: user.email,
-          password: defaultPassword,
-          phone: user.phone ?? null,
-          website: user.website ?? null,
-        })),
-      ],
+      data: usersData.map((user) => ({
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        password: defaultPasswordHash,
+        role: "user",
+        phone: user.phone ?? null,
+        website: user.website ?? null,
+      })),
     });
 
     console.log(`Seeding ${postsData.length} posts...`);
@@ -86,7 +112,8 @@ async function main() {
   });
 
   console.log("\nSeed completed successfully.");
-  console.log(`   → ${usersData.length} users + 1 admin`);
+  console.log(`   → 1 admin user (username: admin, password: admin)`);
+  console.log(`   → ${usersData.length} regular users (password: ${DEFAULT_USER_PASSWORD})`);
   console.log(`   → ${postsData.length} posts`);
 }
 

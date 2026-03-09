@@ -146,6 +146,21 @@ This will:
 
 ---
 
+## Test Credentials
+
+| Role    | Username  | Password    |
+| ------- | --------- | ----------- |
+| Admin   | admin     | admin       |
+| Regular | Bret      | password123 |
+| Regular | Antonette | password123 |
+| Regular | Samantha  | password123 |
+
+- **Admin** can delete any post.
+- **Regular users** can only delete their own posts.
+- **Unauthenticated users** can browse posts but cannot delete.
+
+---
+
 ## Development
 
 ```bash
