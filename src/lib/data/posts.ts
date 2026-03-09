@@ -6,7 +6,22 @@ export async function getPosts(userId?: number) {
       deletedAt: null,
       ...(userId && { userId }),
     },
-    include: { user: true },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          role: true,
+          phone: true,
+          website: true,
+          createdAt: true,
+          updatedAt: true,
+          // Not including password
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 }

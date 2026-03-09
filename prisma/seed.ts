@@ -1,6 +1,9 @@
 import { PrismaClient } from "../src/generated/prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+const BCRYPT_ROUNDS = 10;
 
 const USERS_API = "https://jsonplaceholder.typicode.com/users";
 const POSTS_API = "https://jsonplaceholder.typicode.com/posts";
@@ -44,16 +47,31 @@ async function main() {
     await tx.post.deleteMany();
     await tx.user.deleteMany();
 
-    console.log(`Seeding ${usersData.length} users...`);
+    const defaultAdminPassword = await bcrypt.hash("admin", BCRYPT_ROUNDS);
+
+    const defaultPassword = await bcrypt.hash("password", BCRYPT_ROUNDS);
+
+    console.log(`Seeding ${usersData.length} users + 1 admin...`);
     await tx.user.createMany({
-      data: usersData.map((user) => ({
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        phone: user.phone ?? null,
-        website: user.website ?? null,
-      })),
+      data: [
+        {
+          id: 0,
+          name: "Admin",
+          username: "admin",
+          email: "admin@example.com",
+          password: defaultAdminPassword,
+          role: "admin",
+        },
+        ...usersData.map((user) => ({
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          password: defaultPassword,
+          phone: user.phone ?? null,
+          website: user.website ?? null,
+        })),
+      ],
     });
 
     console.log(`Seeding ${postsData.length} posts...`);
@@ -68,7 +86,7 @@ async function main() {
   });
 
   console.log("\nSeed completed successfully.");
-  console.log(`   → ${usersData.length} users`);
+  console.log(`   → ${usersData.length} users + 1 admin`);
   console.log(`   → ${postsData.length} posts`);
 }
 

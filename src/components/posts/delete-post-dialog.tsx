@@ -8,10 +8,10 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { PostWithUser } from "@/types";
+import type { UserPost } from "@/types/posts";
 
 type DeletePostDialogProps = {
-  post: PostWithUser | null;
+  post: UserPost | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;

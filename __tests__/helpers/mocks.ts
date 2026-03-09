@@ -1,4 +1,4 @@
-import type { PostWithUser } from "@/types";
+import type { UserPost } from "@/types";
 import type { User } from "@/generated/prisma/client";
 
 export const createMockUser = (overrides: Partial<User> = {}): User => ({
@@ -13,7 +13,7 @@ export const createMockUser = (overrides: Partial<User> = {}): User => ({
   ...overrides,
 });
 
-export const createMockPost = (overrides: Partial<PostWithUser> = {}): PostWithUser => ({
+export const createMockPost = (overrides: Partial<UserPost> = {}): UserPost => ({
   id: 1,
   title: "Test Post Title",
   body: "This is the body of the test post that should be displayed in the card component.",

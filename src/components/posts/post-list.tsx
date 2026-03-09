@@ -9,10 +9,10 @@ import { DeletePostDialog } from "@/components/posts/delete-post-dialog";
 import { StatusMessage } from "@/components/ui/status-message";
 import { deletePost } from "@/lib/api";
 import { useOnlineStatus } from "@/hooks/use-online-status";
-import type { PostWithUser } from "@/types";
+import type { UserPost } from "@/types/posts";
 
 type PostListProps = {
-  initialPosts: PostWithUser[];
+  initialPosts: UserPost[];
   hasFilter?: boolean;
 };
 
@@ -21,7 +21,7 @@ export function PostList({ initialPosts, hasFilter = false }: PostListProps) {
   const { isOnline } = useOnlineStatus();
 
   const [posts, setPosts] = useState(initialPosts);
-  const [postToDelete, setPostToDelete] = useState<PostWithUser | null>(null);
+  const [postToDelete, setPostToDelete] = useState<UserPost | null>(null);
   // Tracks in-flight deletions to disable the delete button on affected cards and prevent double-deletion in poor connections scenarios
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 

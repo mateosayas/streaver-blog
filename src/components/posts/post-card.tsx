@@ -2,11 +2,11 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
-import type { PostWithUser } from "@/types";
+import type { UserPost } from "@/types/posts";
 import { getInitials } from "@/utils/initials";
 
 type PostCardProps = {
-  post: PostWithUser;
+  post: UserPost;
   isDeleting?: boolean;
   disabled?: boolean;
   onDelete: (id: number) => void;

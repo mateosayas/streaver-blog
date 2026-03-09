@@ -25,6 +25,17 @@ Some product ideas that could be implemented after authentication is:
 - SQLite with Prisma ORM was used as suggested in the challenge.
 - The `.env` file is committed to the repository intentionally, as required by the challenge instructions, to simplify local setup.
 
+**SQLite path resolution quirk:** Prisma CLI resolves SQLite file paths relative to the `schema.prisma` file location (`prisma/`), while the Prisma Client (runtime) resolves them relative to the process working directory (project root). With the schema at `prisma/schema.prisma` and `DATABASE_URL="file:./prisma/dev.db"`:
+
+- The app correctly finds `prisma/dev.db` (resolved from project root).
+- `prisma migrate dev` targets `prisma/prisma/dev.db` (resolved from `prisma/`), creating a second file.
+
+After running `prisma migrate dev`, copy the result back to the correct location:
+
+```bash
+cp prisma/prisma/dev.db prisma/dev.db && rm -rf prisma/prisma
+```
+
 ---
 
 # Seed Data

@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "@/lib/api/types";
 
 const API_BASE = "/api/v1";
 
