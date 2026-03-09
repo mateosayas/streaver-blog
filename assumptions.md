@@ -154,6 +154,16 @@ This allows:
 
 ---
 
+# Forms
+
+The login form uses native browser form handling (`FormData`) rather than a form library like **react-hook-form**.
+
+The application has a single form with two fields and no complex validation requirements — the only constraint is that both fields are required, which is enforced natively via the `required` attribute. Introducing a form library for this use case would add dependency overhead and boilerplate without meaningful benefit.
+
+If the application grows to include registration, profile editing, or other forms with conditional fields, cross-field validation, or async validation logic, adopting react-hook-form would be a natural next step.
+
+---
+
 # UI & Styling
 
 The UI uses **Tailwind CSS** and **shadcn/ui** components to provide accessible and composable primitives.
