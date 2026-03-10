@@ -12,13 +12,15 @@ function getDatabaseUrl(): string {
 
   if (url.startsWith("file:") && !url.startsWith("file:/")) {
     const relativePath = url.replace(/^file:/, "");
-    return `file:${path.resolve(process.cwd(), relativePath)}`;
+    // Prisma CLI resolves SQLite paths relative to schema.prisma (prisma/).
+    // Replicate that here so the runtime connects to the same file.
+    return `file:${path.resolve(process.cwd(), "prisma", relativePath)}`;
   }
 
   return url;
 }
 
 export const prisma =
-  globalForPrisma.prisma || new PrismaClient({ datasources: { db: { url: getDatabaseUrl() } } });
+  globalForPrisma.prisma || new PrismaClient({ datasourceUrl: getDatabaseUrl() });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
