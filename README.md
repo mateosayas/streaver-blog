@@ -35,30 +35,6 @@ Centralizing database logic in this layer keeps the architecture easier to maint
 
 ---
 
-## Rendering Strategy
-
-The `/posts` page uses **Server Components** for data fetching.
-
-Posts are queried directly from the database during server rendering, which:
-
-- avoids client-side loading waterfalls
-- reduces JavaScript sent to the browser
-- improves perceived performance
-
-The page reads `searchParams` to filter posts by `userId`. Because of this, Next.js treats the route as **dynamic**, meaning it renders on every request rather than being statically generated.
-
----
-
-## Client Components
-
-Client Components are used only where browser interactivity is required:
-
-- `PostList` — manages optimistic updates
-- `PostsFilter` — updates the URL filter
-- `OfflineBanner` — listens to browser network status
-
----
-
 ## Mutations
 
 Post deletion is implemented through a REST endpoint:

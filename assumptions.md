@@ -2,6 +2,14 @@
 
 This document outlines design decisions and scope boundaries made while implementing the challenge.
 
+The core challenge scope covers: listing posts fetched from JSONPlaceholder, filtering by author, and deleting posts with optimistic UI updates. Additional features (authentication, offline UX, security headers) were added beyond that scope.
+
+---
+
+# Seed Data Availability
+
+The seed script fetches live data from `jsonplaceholder.typicode.com` at setup time. If that external API is unavailable when running `npx prisma db seed`, the script will fail.
+
 ---
 
 # Authentication
@@ -21,6 +29,7 @@ The following rules are enforced:
 - No registration flow — users are seeded. In production, a registration flow would be added.
 - Admin credentials are intentionally simple (`admin` / `admin`) for evaluation purposes.
 - Default password for all seeded JSONPlaceholder users is `password123`.
+- Rate limiting is not implemented. The auth endpoint (`/api/auth/callback/credentials`) is currently unprotected against brute-force attacks. In a production application with more route handlers, rate limiting would be added — either via a Next.js middleware layer or a provider like Vercel's Edge Middleware — applied consistently across all sensitive routes.
 
 ---
 
@@ -121,6 +130,16 @@ Next.js's `error.tsx` route convention is used to handle server-side rendering f
 This automatically wraps the route in a React Error Boundary and renders fallback UI if a Server Component throws.
 
 In this application, server rendering and database access represent the primary failure surfaces.
+
+---
+
+# HTTP Security Headers
+
+Three security headers are set globally in `next.config.ts`:
+
+- `X-Frame-Options: DENY` — prevents the app from being embedded in an iframe (clickjacking protection).
+- `X-Content-Type-Options: nosniff` — prevents browsers from MIME-sniffing responses away from the declared content type.
+- `Referrer-Policy: strict-origin-when-cross-origin` — limits referrer information sent to cross-origin requests.
 
 ---
 

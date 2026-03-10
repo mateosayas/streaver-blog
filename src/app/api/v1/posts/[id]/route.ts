@@ -36,14 +36,18 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     });
 
     if (!existingPost) {
-      return apiError(API_ERROR_CODES.NOT_FOUND, `Post with id ${postId} not found`, 404);
+      return apiError(API_ERROR_CODES.NOT_FOUND, "Post not found", 404);
     }
 
     const isAdmin = session.user.role === "admin";
     const isOwner = existingPost.userId === Number(session.user.id);
 
     if (!isAdmin && !isOwner) {
-      return apiError(API_ERROR_CODES.FORBIDDEN, "You can only delete your own posts", 403);
+      return apiError(
+        API_ERROR_CODES.FORBIDDEN,
+        "You do not have permission to delete this post",
+        403
+      );
     }
 
     await prisma.post.update({
