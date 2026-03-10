@@ -2,6 +2,8 @@
 
 A small Next.js application that lists blog posts, allows filtering by author, and supports post deletion with optimistic UI updates.
 
+The core challenge scope covers: listing posts fetched from JSONPlaceholder, filtering by author, and deleting posts with optimistic UI updates. Additional features (authentication, offline UX, security headers) were added beyond that scope.
+
 The application is designed with users in mind who may experience unstable or slow internet connections, prioritizing responsive UI feedback and clear error handling.
 
 ---
@@ -9,7 +11,7 @@ The application is designed with users in mind who may experience unstable or sl
 # Tech Stack
 
 - **Framework:** Next.js (App Router)
-- **Language:** TypeScript (strict mode)
+- **Language:** TypeScript
 - **Database:** SQLite with Prisma ORM
 - **Styling:** Tailwind CSS + shadcn/ui
 - **URL State:** nuqs

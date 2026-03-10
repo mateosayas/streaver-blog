@@ -3,14 +3,14 @@ import path from "path";
 import { PrismaClient } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 
-// Prisma's LibraryEngine resolves relative SQLite paths from the engine binary's
-// directory (src/generated/prisma/), not from CWD. Constructing an absolute path
-// from CWD ensures the seed finds the correct database regardless of call site.
+// Prisma resolves relative SQLite paths from the engine binary's directory, not
+// from the schema file. Convert to an absolute path using __dirname (prisma/)
+// so resolution matches Prisma's own convention regardless of call site.
 const dbUrl = process.env.DATABASE_URL?.startsWith("file:")
-  ? `file:${path.resolve(process.cwd(), process.env.DATABASE_URL.slice(5))}`
+  ? `file:${path.resolve(__dirname, process.env.DATABASE_URL.slice(5))}`
   : process.env.DATABASE_URL;
 
-const prisma = new PrismaClient({ datasources: { db: { url: dbUrl } } });
+const prisma = new PrismaClient({ datasourceUrl: dbUrl });
 
 const USERS_API = "https://jsonplaceholder.typicode.com/users";
 const POSTS_API = "https://jsonplaceholder.typicode.com/posts";
@@ -66,26 +66,14 @@ async function main() {
   const adminPasswordHash = await bcrypt.hash(ADMIN_USER.password, SALT_ROUNDS);
   const defaultPasswordHash = await bcrypt.hash(DEFAULT_USER_PASSWORD, SALT_ROUNDS);
 
-  // Preserves idempotency — safe to run multiple times
   console.log("Clearing existing data and seeding...");
   // Transaction ensures all-or-nothing: no partial state if something fails
   await prisma.$transaction(async (tx) => {
     await tx.post.deleteMany();
     await tx.user.deleteMany();
 
-    console.log("Seeding admin user...");
-    await tx.user.create({
-      data: {
-        name: ADMIN_USER.name,
-        username: ADMIN_USER.username,
-        email: ADMIN_USER.email,
-        password: adminPasswordHash,
-        role: ADMIN_USER.role,
-        phone: ADMIN_USER.phone,
-        website: ADMIN_USER.website,
-      },
-    });
-
+    // Seed JSONPlaceholder users first so their explicit IDs (1–10) are reserved
+    // before admin is created with autoincrement (gets ID 11+).
     console.log(`Seeding ${usersData.length} users...`);
     await tx.user.createMany({
       data: usersData.map((user) => ({
@@ -98,6 +86,19 @@ async function main() {
         phone: user.phone ?? null,
         website: user.website ?? null,
       })),
+    });
+
+    console.log("Seeding admin user...");
+    await tx.user.create({
+      data: {
+        name: ADMIN_USER.name,
+        username: ADMIN_USER.username,
+        email: ADMIN_USER.email,
+        password: adminPasswordHash,
+        role: ADMIN_USER.role,
+        phone: ADMIN_USER.phone,
+        website: ADMIN_USER.website,
+      },
     });
 
     console.log(`Seeding ${postsData.length} posts...`);
