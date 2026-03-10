@@ -54,17 +54,18 @@ This approach:
 
 # Data Fetching Strategy
 
-The `/posts` page fetches data during server rendering using **Next.js Server Components**.
+The `/posts` page uses **dynamic server-side rendering** — the page is rendered on the server on every request, with fresh data each time.
 
-The page reads `searchParams` to filter posts by `userId`. Because of this, Next.js treats the route as **dynamic**, meaning it renders on each request rather than being statically generated.
+Two factors drive this:
 
-Client-side libraries such as **TanStack Query** were considered but not introduced because:
+- The page reads `searchParams` to apply the `userId` filter. Next.js treats any route that accesses dynamic request data as dynamic, opting it out of static generation.
+- The data layer uses Prisma directly rather than `fetch`, so Next.js's Data Cache does not apply.
 
-- reads occur during server rendering
-- there is only a single mutation
-- optimistic UI updates are handled locally
+**Tradeoffs considered:**
 
-For larger applications with multiple client-side queries or background refetching, TanStack Query would likely be introduced.
+Static generation (SSG or ISR) would offer faster response times and lower server load, but is incompatible with per-request URL filtering. Since filtered results must reflect the current query string, I went with dynamic rendering here.
+
+Client-side fetching with a library such as **TanStack Query** was also considered but not introduced because reads occur during server rendering, there is only a single mutation, and optimistic UI updates are handled locally. For larger applications with multiple client-side queries or background refetching, TanStack Query would likely be introduced.
 
 ---
 
