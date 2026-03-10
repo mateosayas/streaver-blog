@@ -232,19 +232,6 @@ npm start
 
 ---
 
-# How to Review This Project
-
-Suggested review order:
-
-1. Start the application and visit `/posts`
-2. Test filtering by author
-3. Log in using the test credentials
-4. Delete a post and observe the optimistic UI update
-5. Review the API route `/api/v1/posts/[id]`
-6. Review the Data Access Layer in `src/lib/data`
-
----
-
 # Additional Notes
 
 See `assumptions.md` for detailed design decisions, tradeoffs, and implementation considerations.
