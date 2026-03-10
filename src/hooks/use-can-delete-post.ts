@@ -1,13 +1,13 @@
-import { useSession } from "next-auth/react";
+import { useLoggedInUser } from "@/hooks/use-logged-in-user";
 import type { UserPost } from "@/types/posts";
 
 export function useCanDeletePost() {
-  const { data: session } = useSession();
+  const { user } = useLoggedInUser();
 
   return (post: UserPost): boolean => {
-    if (!session?.user) return false;
-    if (session.user.role === "admin") return true;
+    if (!user) return false;
+    if (user.role === "admin") return true;
 
-    return post.userId === Number(session.user.id);
+    return post.userId === user.id;
   };
 }

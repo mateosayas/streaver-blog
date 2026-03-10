@@ -1,6 +1,9 @@
+import { auth } from "@/lib/auth";
 import { getPosts, getUsers } from "@/lib/data/posts";
 import { PostList } from "@/components/posts/post-list";
 import { ALL_USERS_VALUE, PostsFilter } from "@/components/posts/posts-filter";
+import { iife } from "@/utils/iife";
+import { pluralize } from "@/utils/pluralize";
 
 type PostsPageProps = {
   searchParams: Promise<{ userId?: string }>;
@@ -11,16 +14,27 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
   const parsed = rawUserId ? Number(rawUserId) : NaN;
   const userId = isNaN(parsed) ? undefined : parsed;
 
-  const [posts, users] = await Promise.all([getPosts(userId), getUsers()]);
+  const [posts, users, session] = await Promise.all([getPosts(userId), getUsers(), auth()]);
 
   const postListKey = userId ?? ALL_USERS_VALUE;
 
   const activeUser = userId ? users.find((u) => u.id === userId) : null;
+  const isOwnPosts = !!activeUser && session?.user?.id === String(activeUser.id);
 
-  const filterLabel = activeUser ? `${activeUser.name}'s Posts` : "All Posts";
-  const filterSubtitle = activeUser
-    ? `Showing ${posts.length} post${posts.length !== 1 ? "s" : ""} from ${activeUser.name}`
-    : `Showing ${posts.length} posts from all authors`;
+  const authorLabel = iife(() => {
+    if (!activeUser) return "all authors";
+
+    return isOwnPosts ? "you" : activeUser.name;
+  });
+
+  const filterLabel = iife(() => {
+    if (!activeUser) return "All Posts";
+    if (isOwnPosts) return "Your Posts";
+
+    return `${activeUser.name}'s Posts`;
+  });
+
+  const filterSubtitle = `Showing ${pluralize(posts.length, "post")} from ${authorLabel}`;
 
   return (
     <>
@@ -34,7 +48,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
             </h1>
             {/* Post count — mobile only */}
             <span className="text-muted-foreground text-[12px] lg:hidden">
-              {posts.length} posts
+              {pluralize(posts.length, "post")}
             </span>
           </div>
           {/* Subtitle — desktop only */}

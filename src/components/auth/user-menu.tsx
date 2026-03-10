@@ -1,18 +1,29 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
+import { LogOut, ChevronDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { useLoggedInUser } from "@/hooks/use-logged-in-user";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export function UserMenu() {
-  const { data: session, status } = useSession();
+  const { user, status } = useLoggedInUser();
 
   if (status === "loading") {
-    return <Skeleton className="h-8 w-24 rounded" />;
+    return <Skeleton className="h-7 w-7 rounded-full" />;
   }
 
-  if (!session) {
+  if (!user) {
     return (
       <Button asChild variant="outline" size="sm">
         <Link href="/login">Sign in</Link>
@@ -21,18 +32,33 @@ export function UserMenu() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-muted-foreground text-sm">
-        {session.user.name}
-        {session.user.role === "admin" && (
-          <span className="bg-primary/10 text-primary ml-1.5 rounded px-1.5 py-0.5 text-xs font-medium">
-            Admin
-          </span>
-        )}
-      </span>
-      <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/posts" })}>
-        Sign out
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="focus-visible:ring-ring flex cursor-pointer items-center rounded-full focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          aria-label="User menu"
+        >
+          <UserAvatar name={user.name} />
+
+          <ChevronDown className="text-muted-foreground ml-1 h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={8} className="w-48">
+        <DropdownMenuLabel className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">{user.name}</span>
+          {user.role === "admin" && (
+            <span className="text-muted-foreground text-xs font-normal">Admin</span>
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => signOut({ callbackUrl: "/posts" })}
+          className="cursor-pointer"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -1,9 +1,9 @@
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/cn";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { cn } from "@/lib/utils";
 import type { UserPost } from "@/types/posts";
-import { getInitials } from "@/utils/initials";
 
 type PostCardProps = {
   post: UserPost;
@@ -30,9 +30,7 @@ export function PostCard({
       <CardHeader className="flex flex-row items-center justify-between p-0">
         {/* Author */}
         <div className="flex items-center gap-2">
-          <div className="bg-primary text-primary-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold">
-            {getInitials(post.user.name)}
-          </div>
+          <UserAvatar name={post.user.name} />
           <span className="text-foreground text-[13px] font-medium">{post.user.name}</span>
         </div>
 

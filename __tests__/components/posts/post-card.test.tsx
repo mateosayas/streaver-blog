@@ -36,7 +36,7 @@ describe("PostCard", () => {
     const post = createMockPost();
     const onDelete = vi.fn();
 
-    render(<PostCard post={post} onDelete={onDelete} />);
+    render(<PostCard post={post} onDelete={onDelete} canDelete />);
 
     await user.click(screen.getByRole("button", { name: /delete post/i }));
 
@@ -47,7 +47,7 @@ describe("PostCard", () => {
   it("disables delete button when isDeleting is true", () => {
     const post = createMockPost();
 
-    render(<PostCard post={post} onDelete={vi.fn()} isDeleting />);
+    render(<PostCard post={post} onDelete={vi.fn()} canDelete isDeleting />);
 
     expect(screen.getByRole("button", { name: /delete post/i })).toBeDisabled();
   });
@@ -55,7 +55,7 @@ describe("PostCard", () => {
   it("disables delete button when disabled prop is true", () => {
     const post = createMockPost();
 
-    render(<PostCard post={post} onDelete={vi.fn()} disabled />);
+    render(<PostCard post={post} onDelete={vi.fn()} canDelete disabled />);
 
     expect(screen.getByRole("button", { name: /delete post/i })).toBeDisabled();
   });

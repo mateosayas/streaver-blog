@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLoggedInUser } from "@/hooks/use-logged-in-user";
 import type { User } from "@/generated/prisma/client";
 
 export const ALL_USERS_VALUE = "all";
@@ -17,6 +18,7 @@ type PostsFilterProps = {
 };
 
 export function PostsFilter({ users }: PostsFilterProps) {
+  const { user: currentUser } = useLoggedInUser();
   const [userId, setUserId] = useQueryState(
     "userId",
     parseAsInteger.withOptions({ shallow: false })
@@ -51,7 +53,14 @@ export function PostsFilter({ users }: PostsFilterProps) {
         <SelectItem value={ALL_USERS_VALUE}>All Users</SelectItem>
         {sortedUsers.map((user) => (
           <SelectItem key={user.id} value={user.id.toString()}>
-            {user.name}
+            <span className="flex items-center gap-2">
+              {user.name}
+              {currentUser?.id === user.id && (
+                <span className="bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[10px] leading-none font-medium">
+                  You
+                </span>
+              )}
+            </span>
           </SelectItem>
         ))}
       </SelectContent>

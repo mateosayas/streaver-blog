@@ -1,4 +1,4 @@
-export function getInitials(name: string): string {
+export function getUserInitials(name: string): string {
   return name
     .split(" ")
     .slice(0, 2)

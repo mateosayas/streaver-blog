@@ -1,9 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PostsFilter } from "@/components/posts/posts-filter";
 import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { createMockUsers } from "@tests/helpers/mocks";
+
+vi.mock("@/hooks/use-logged-in-user", () => ({
+  useLoggedInUser: () => ({ user: null, status: "unauthenticated" }),
+}));
 
 function renderFilter() {
   render(
