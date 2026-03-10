@@ -2,9 +2,32 @@
 
 A small Next.js application that lists blog posts, allows filtering by author, and supports post deletion with optimistic UI updates.
 
-The core challenge scope covers: listing posts fetched from JSONPlaceholder, filtering by author, and deleting posts with optimistic UI updates. Additional features (authentication, offline UX, security headers) were added beyond that scope.
-
 The application is designed with users in mind who may experience unstable or slow internet connections, prioritizing responsive UI feedback and clear error handling.
+
+---
+
+# Challenge Requirements
+
+The original challenge required implementing:
+
+- Listing blog posts
+- Filtering posts by author
+- Deleting posts
+
+---
+
+# Additional Features Implemented
+
+Beyond the required scope, several improvements were added:
+
+- Authentication and authorization
+- Optimistic UI updates for destructive actions
+- Offline UX improvements
+- HTTP security headers
+- Structured API response format
+- Database persistence using Prisma + SQLite
+
+These additions aim to demonstrate architectural thinking and real-world production patterns.
 
 ---
 
@@ -16,69 +39,88 @@ The application is designed with users in mind who may experience unstable or sl
 - **Styling:** Tailwind CSS + shadcn/ui
 - **URL State:** nuqs
 - **Testing:** Vitest + React Testing Library
+- **Authentication:** NextAuth (Credentials provider)
 
 ---
 
 # Architecture Overview
 
-The application follows a simple layered structure that separates UI, server logic, and database access.
+The application follows a layered structure that separates UI, server logic, and database access.
 
-## Data Access Layer
+### Data Access Layer
 
-All database operations live in `src/lib/data/`.
+All database operations live in:
 
-This layer encapsulates Prisma queries so that:
+src/lib/data/
 
-- Server Components can call database reads directly during SSR
-- API Route Handlers reuse the same logic for mutations
-- Prisma does not leak into UI components or route handlers
+Server Components call DAL functions directly during server rendering, while API Route Handlers reuse the same functions for mutations.
 
-Centralizing database logic in this layer keeps the architecture easier to maintain and evolve.
+This isolates Prisma from UI components and centralizes database logic.
 
 ---
 
-## Mutations
+### Mutations
 
-Post deletion is implemented through a REST endpoint:
+Post deletion is implemented via a REST endpoint:
 
-```
 DELETE /api/v1/posts/:id
-```
 
 The UI performs an **optimistic update**:
 
 1. The post is immediately removed from the UI
-2. The API request runs in the background
-3. If the request fails, the post is restored and an error toast appears
-4. On success, `router.refresh()` re-renders the Server Component tree to ensure the UI reflects the latest server state
+2. The DELETE request runs in the background
+3. If the request fails, the previous state is restored
+4. On success, `router.refresh()` synchronizes the UI with the server
 
 ---
 
-## URL State
+### URL State
 
-Filtering by `userId` is implemented using query parameters.
+Filtering by `userId` is stored in the URL query string using **nuqs**.
 
-The `nuqs` library provides a type-safe abstraction for managing URL state that works both:
+This enables:
 
-- on the **server during SSR**
-- on the **client without full page reloads**
-
-This allows filtered views to persist across refreshes and be shareable via URL.
+- shareable filtered URLs
+- persistence across refreshes
+- predictable browser navigation behavior
 
 ---
 
-## Error Handling
+# API Overview
 
-Server rendering errors are handled using the Next.js `error.tsx` route convention, which automatically wraps the route in a React Error Boundary.
+| Method | Endpoint          | Description         |
+| ------ | ----------------- | ------------------- |
+| DELETE | /api/v1/posts/:id | Soft deletes a post |
 
-API responses follow a standardized envelope:
+All responses follow a consistent envelope format:
 
 ```
 { success: true, data }
 { success: false, error: { code, message } }
 ```
 
-This ensures predictable client-side handling.
+Input validation is performed using Zod before database operations occur.
+
+---
+
+# Project Structure
+
+```
+├── prisma/           Schema, migrations, and seed script
+├── public/           Static assets
+├── __tests__/        Unit and integration tests
+└── src/
+    ├── app/          Next.js routes and layouts
+    ├── components/   Reusable UI components
+    ├── hooks/        Custom React hooks
+    ├── lib/
+    │   ├── api/      API response helpers
+    │   ├── auth/     Authentication utilities
+    │   ├── data/     Data access layer (Prisma queries)
+    │   └── validations/  Zod schemas
+    ├── types/        Shared TypeScript types
+    └── utils/        Utility helpers
+```
 
 ---
 
@@ -103,9 +145,9 @@ npm install
 
 ## Environment Variables
 
-The challenge requires the repository to include the environment variables needed to run the project locally.
+The challenge requires that the repository include the environment variables needed to run locally.
 
-The `.env` file is therefore committed intentionally to simplify local setup.
+For this reason, the `.env` file is committed intentionally to simplify setup.
 
 ---
 
@@ -124,7 +166,7 @@ This will:
 
 ---
 
-## Test Credentials
+# Test Credentials
 
 | Role    | Username  | Password    |
 | ------- | --------- | ----------- |
@@ -133,27 +175,29 @@ This will:
 | Regular | Antonette | password123 |
 | Regular | Samantha  | password123 |
 
-- **Admin** can delete any post.
-- **Regular users** can only delete their own posts.
-- **Unauthenticated users** can browse posts but cannot delete.
+Permissions:
+
+- **Admin:** can delete any post
+- **Regular users:** can delete their own posts
+- **Unauthenticated users:** can browse posts but cannot delete
 
 ---
 
-## Development
+# Development
 
 ```bash
 npm run dev
 ```
 
-Then open:
+Open:
 
-```
 http://localhost:3000/posts
-```
 
 ---
 
-## Testing
+# Testing
+
+Tests are implemented using **Vitest** and **React Testing Library**.
 
 Run tests in watch mode:
 
@@ -161,15 +205,25 @@ Run tests in watch mode:
 npm test
 ```
 
-Run tests once:
+Run once:
 
 ```bash
 npx vitest run
 ```
 
+### What is tested
+
+The test suite focuses on core application behavior:
+
+- UI components responsible for rendering posts
+- Validation schemas used by API routes
+- Utility helpers used across the application
+
+Integration and end-to-end testing are outside the scope of the challenge but would typically be implemented using Playwright in a production environment.
+
 ---
 
-## Production Build
+# Production Build
 
 ```bash
 npm run build
@@ -178,6 +232,19 @@ npm start
 
 ---
 
+# How to Review This Project
+
+Suggested review order:
+
+1. Start the application and visit `/posts`
+2. Test filtering by author
+3. Log in using the test credentials
+4. Delete a post and observe the optimistic UI update
+5. Review the API route `/api/v1/posts/[id]`
+6. Review the Data Access Layer in `src/lib/data`
+
+---
+
 # Additional Notes
 
-See `assumptions.md` for additional design decisions and implementation considerations.
+See `assumptions.md` for detailed design decisions, tradeoffs, and implementation considerations.

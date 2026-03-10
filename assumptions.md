@@ -1,4 +1,4 @@
-# Assumptions
+# Assumptions & Design Decisions
 
 This document outlines design decisions and scope boundaries made while implementing the challenge.
 
@@ -6,144 +6,179 @@ This document outlines design decisions and scope boundaries made while implemen
 
 # Seed Data Availability
 
-The seed script fetches live data from `jsonplaceholder.typicode.com` at setup time. If that external API is unavailable when running `npx prisma db seed`, the script will fail.
+The seed script fetches data from:
 
----
+https://jsonplaceholder.typicode.com
 
-# Authentication
+If the external API is unavailable when running:
 
-Authentication was added as an extension beyond the original challenge scope.
+npx prisma db seed
 
-The following rules are enforced:
-
-- Unauthenticated users can browse and filter posts but cannot delete.
-- Authenticated regular users can only delete their own posts (`post.userId === session.userId`).
-- The `admin` user can delete any post regardless of ownership.
-- Authorization is enforced server-side in the API route — the client is never trusted.
-
-**Implementation decisions:**
-
-- Passwords are hashed with **bcryptjs** (pure JavaScript — no native binaries or no C++ compiler required, so reviewers can `npm install` without platform issues).
-- No registration flow — users are seeded. In production, a registration flow would be added.
-- Admin credentials are intentionally simple (`admin` / `admin`) for evaluation purposes.
-- Default password for all seeded JSONPlaceholder users is `password123`.
-- Rate limiting is not implemented. The auth endpoint (`/api/auth/callback/credentials`) is currently unprotected against brute-force attacks. In a production application with more route handlers, rate limiting would be added — either via a Next.js middleware layer or a provider like Vercel's Edge Middleware — applied consistently across all sensitive routes.
+the seed process will fail.
 
 ---
 
 # Database
 
-- SQLite with Prisma ORM was used as suggested in the challenge.
-- The `.env` file is committed to the repository intentionally, as required by the challenge instructions, to simplify local setup.
+SQLite with Prisma ORM was used as suggested in the challenge instructions.
 
-**SQLite path resolution:** `DATABASE_URL="file:./dev.db"` follows Prisma's standard convention, which resolves the path relative to `schema.prisma` — placing the database at `prisma/dev.db`. The Prisma Client converts this to an absolute path at runtime to ensure consistent resolution regardless of working directory.
+The `.env` file is committed intentionally to simplify local setup as required by the challenge.
 
----
+### SQLite Path Resolution
 
-# Seed Data
+DATABASE_URL="file:./dev.db"
 
-Initial data is sourced from:
+Prisma resolves this path relative to `schema.prisma`, placing the database at:
 
-- https://jsonplaceholder.typicode.com/users
-- https://jsonplaceholder.typicode.com/posts
+prisma/dev.db
 
-The seed script imports this data into the database and is **idempotent**, meaning it can be run multiple times safely.
+At runtime Prisma converts this to an absolute path to ensure consistent resolution regardless of the working directory.
 
 ---
 
 # Data Access Layer
 
-All database interactions are implemented inside `src/lib/data/`.
+All database interactions are implemented in:
 
-Server Components call DAL functions directly during server rendering for reads, while API route handlers reuse the same functions for mutations.
+src/lib/data/
 
-This keeps Prisma isolated from route handlers and UI components and centralizes database logic in one location.
+Server Components call these functions during server rendering, while API route handlers reuse the same functions for mutations.
+
+This approach:
+
+- isolates Prisma from route handlers
+- centralizes database access
+- avoids duplication across server entry points
 
 ---
 
 # Data Fetching Strategy
 
-The `/posts` page fetches data directly during server rendering using Server Components.
+The `/posts` page fetches data during server rendering using **Next.js Server Components**.
 
-The page reads `searchParams` to filter posts by `userId`. Because of this, Next.js treats the route as **dynamic**, meaning it is rendered on each request rather than statically generated.
+The page reads `searchParams` to filter posts by `userId`. Because of this, Next.js treats the route as **dynamic**, meaning it renders on each request rather than being statically generated.
 
-Since the data layer uses Prisma instead of `fetch`, Next.js's Data Cache does not apply. Each request therefore performs a fresh database query.
-
-Client-side data fetching libraries such as TanStack Query were considered but are unnecessary for this application because:
+Client-side libraries such as **TanStack Query** were considered but not introduced because:
 
 - reads occur during server rendering
 - there is only a single mutation
 - optimistic UI updates are handled locally
 
-For a larger application with multiple client-side queries or background refetching, TanStack Query would likely be introduced.
+For larger applications with multiple client-side queries or background refetching, TanStack Query would likely be introduced.
 
 ---
 
 # Post Deletion
 
-Posts use a **soft delete** mechanism implemented through a `deletedAt` timestamp rather than being permanently removed.
+Post deletion is implemented via:
 
-This mirrors common production patterns where records are rarely hard-deleted and allows potential future features such as restoring posts or maintaining audit history.
+DELETE /api/v1/posts/:id
+
+Deletion uses a **soft delete** mechanism (`deletedAt` timestamp) rather than permanent removal.
+
+Benefits:
+
+- prevents accidental data loss
+- allows future restoration
+- supports audit history
 
 All read queries exclude records where `deletedAt` is not `null`.
 
 ---
 
+# Authentication
+
+Authentication was implemented as an extension beyond the original challenge scope.
+
+Rules enforced:
+
+- Unauthenticated users can browse and filter posts but cannot delete
+- Regular authenticated users can delete only their own posts
+- The `admin` user can delete any post
+
+Authorization is enforced **server-side** within the API route.
+
+### Implementation details
+
+- Authentication uses **NextAuth Credentials provider**
+- Passwords are hashed using **bcryptjs**
+- Users are seeded rather than registered
+
+Default credentials exist only to simplify evaluation.
+
+---
+
+# Security Limitations
+
+Rate limiting is not implemented.
+
+The authentication endpoint:
+
+/api/auth/callback/credentials
+
+is therefore vulnerable to brute-force attempts.
+
+In a production environment rate limiting would typically be implemented using:
+
+- Next.js middleware
+- an edge provider
+- infrastructure-level protections
+
+---
+
 # Pagination
 
-Pagination was intentionally not implemented.
+Pagination was intentionally omitted.
 
-The seeded dataset contains only 100 posts, which is manageable to render without pagination.
+The seeded dataset contains only 100 posts, which can be rendered without performance issues.
 
-For larger datasets, either offset-based or cursor-based pagination would be introduced.
+For larger datasets either **offset pagination** or **cursor pagination** would be introduced.
 
 ---
 
 # Offline UX
 
-The challenge mentions that users frequently experience poor or unstable network connections. To improve the user experience in these situations, the following patterns were implemented:
+The challenge mentions that users frequently experience unreliable network connections.
 
-- optimistic UI updates when deleting posts
+To improve usability under poor network conditions the following patterns were implemented:
+
+- optimistic UI updates
 - retry actions for failed requests
-- an offline detection banner
+- offline detection banner
 - destructive actions disabled while offline
 
-These patterns ensure the interface remains responsive even when network conditions are unreliable.
+These patterns help keep the interface responsive even when the network is unstable.
 
 ---
 
 # Error Handling
 
-Next.js's `error.tsx` route convention is used to handle server-side rendering failures.
+Next.js's `error.tsx` convention is used to handle server rendering failures.
 
-This automatically wraps the route in a React Error Boundary and renders fallback UI if a Server Component throws.
-
-In this application, server rendering and database access represent the primary failure surfaces.
-
----
-
-# HTTP Security Headers
-
-Three security headers are set globally in `next.config.ts`:
-
-- `X-Frame-Options: DENY` — prevents the app from being embedded in an iframe (clickjacking protection).
-- `X-Content-Type-Options: nosniff` — prevents browsers from MIME-sniffing responses away from the declared content type.
-- `Referrer-Policy: strict-origin-when-cross-origin` — limits referrer information sent to cross-origin requests.
+This wraps the route in a React Error Boundary and renders fallback UI if a Server Component throws.
 
 ---
 
 # API Design
 
-API routes are versioned under `/api/v1/`.
+API routes are versioned under:
 
-All responses follow a consistent envelope format:
+/api/v1/
+
+Responses follow a consistent envelope format:
 
 ```
 { success: true, data }
 { success: false, error: { code, message } }
 ```
 
-Input validation is performed using **Zod** before any database operations occur.
+Benefits of this pattern include:
+
+- predictable client error handling
+- consistent response structure across endpoints
+- easier future API expansion
+
+Input validation is performed using **Zod** before database operations occur.
 
 ---
 
@@ -151,12 +186,11 @@ Input validation is performed using **Zod** before any database operations occur
 
 The `userId` filter is stored in the URL query string.
 
-The `nuqs` library provides a type-safe abstraction for managing query parameters that works consistently in both Server and Client Components.
+The **nuqs** library provides a type-safe abstraction for managing query parameters across both Server and Client Components.
 
-This allows:
+This enables:
 
-- server-rendered filtered results
-- shareable URLs
+- shareable filtered URLs
 - persistence across refreshes
 - predictable browser navigation behavior
 
@@ -164,28 +198,70 @@ This allows:
 
 # Forms
 
-The login form uses native browser form handling (`FormData`) rather than a form library like **react-hook-form**.
+The login form uses native browser form handling (`FormData`) instead of a form library.
 
-The application has a single form with two fields and no complex validation requirements — the only constraint is that both fields are required, which is enforced natively via the `required` attribute. Introducing a form library for this use case would add dependency overhead and boilerplate without meaningful benefit.
+The application contains only a single form with two required fields. Introducing a library such as **react-hook-form** would add unnecessary complexity.
 
-If the application grows to include registration, profile editing, or other forms with conditional fields, cross-field validation, or async validation logic, adopting react-hook-form would be a natural next step.
+If the application later introduced features such as:
+
+- registration
+- profile editing
+- complex validations
+
+a form library would likely become beneficial.
 
 ---
 
 # UI & Styling
 
-The UI uses **Tailwind CSS** and **shadcn/ui** components to provide accessible and composable primitives.
+The interface uses:
+
+- Tailwind CSS
+- shadcn/ui components
+
+These tools provide accessible and composable UI primitives while keeping styling predictable and maintainable.
 
 ---
 
 # Testing
 
-Unit tests are implemented using **Vitest** and **React Testing Library**.
+Unit tests are implemented using:
+
+- Vitest
+- React Testing Library
 
 Tests focus on:
 
-- Important UI components
-- validation schemas
-- helper utilities
+- UI components responsible for rendering posts
+- validation schemas used by API routes
+- utility helpers
 
-End-to-end testing is outside the scope of this challenge but would likely be implemented using **Playwright** in a production environment.
+This approach prioritizes testing **core application logic** while avoiding excessive test complexity for a small project.
+
+End-to-end testing is outside the scope of the challenge but would typically be implemented using **Playwright** in a production environment.
+
+---
+
+# Code Quality
+
+ESLint, Prettier, and Husky are configured to enforce consistent code style.
+
+A pre-commit hook runs `lint-staged`, which automatically lints and formats only the staged files before each commit:
+
+- `.ts/.tsx/.js/.jsx` — ESLint fix + Prettier
+- `.json/.md/.css` — Prettier only
+
+`prettier-plugin-tailwindcss` is included to enforce consistent Tailwind class ordering.
+
+---
+
+# Tradeoffs
+
+Some decisions were intentionally simplified due to the scope of the challenge:
+
+- SQLite instead of a production database such as PostgreSQL
+- Pagination omitted due to the small dataset
+- Credentials-based authentication instead of OAuth providers
+- No rate limiting or advanced security protections
+
+These areas would likely evolve in a production environment.

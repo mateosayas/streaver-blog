@@ -1,5 +1,6 @@
+import { postIdParamSchema } from "@/lib/validations/posts";
+import { userIdFilterSchema } from "@/lib/validations/users";
 import { describe, it, expect } from "vitest";
-import { userIdFilterSchema, postIdParamSchema } from "@/lib/validations";
 
 const invalidInputs = ["-1", "0", "1.5", "abc", ""];
 

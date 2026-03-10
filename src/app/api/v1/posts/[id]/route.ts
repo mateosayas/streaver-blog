@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { apiSuccess, apiError } from "@/lib/api/response";
 import { API_ERROR_CODES } from "@/lib/api/types";
-import { postIdParamSchema } from "@/lib/validations";
+import { postIdParamSchema } from "@/lib/validations/posts";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
